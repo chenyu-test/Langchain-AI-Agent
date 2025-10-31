@@ -11,6 +11,7 @@ import streamlit as st
 from ai_agent import get_rag_response
 
 
+
 st.set_page_config(page_title="Chatbot", page_icon="💬")
 
 st.title("💬 RAG Chatbot Demo")
@@ -21,3 +22,4 @@ if prompt := st.chat_input("Stelle mir eine Frage..."):
         response = get_rag_response(prompt)
 
     st.write(response)
+
