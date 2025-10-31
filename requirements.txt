@@ -1,0 +1,16 @@
+langchain 
+langchain-core 
+langchain-community 
+langchain-openai 
+langchain-pinecone==0.2.12 
+langchainhub 
+langsmith 
+langgraph 
+langchain-tavily 
+langgraph-checkpoint-sqlite 
+google-api-python-client 
+google-auth-httplib2 
+google-auth-oauthlib 
+langchain-googledrive 
+pypdf
+streamlit

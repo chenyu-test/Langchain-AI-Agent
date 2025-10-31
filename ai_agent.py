@@ -9,25 +9,8 @@ Original file is located at
 
 # Commented out IPython magic to ensure Python compatibility.
 # %pip install --upgrade \
-  langchain \
-  langchain-core \
-  langchain-community \
-  langchain-openai \
-  langchain-pinecone==0.2.12 \
-  langchainhub \
-  langsmith \
-  langgraph \
-  langchain-tavily \
-  langgraph-checkpoint-sqlite \
-  google-api-python-client \
-  google-auth-httplib2 \
-  google-auth-oauthlib \
-  langchain-googledrive \
-  pypdf
-
-import getpass
 import os
-from google.colab import userdata
+import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_tavily import TavilySearch
 from langchain.agents import AgentExecutor, create_tool_calling_agent, tool
@@ -40,24 +23,21 @@ from langchain_pinecone.vectorstores import PineconeVectorStore
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain.tools import tool
-from google.colab import files
-from google.colab import auth
+
 
 # Set LangSmith variables
 os.environ["LANGSMITH_TRACING"] = "true"
 os.environ["LANGSMITH_TRACING_V2"] = "true"
 os.environ["LANGSMITH_ENDPOINT"] = "https://eu.api.smith.langchain.com"
-langsmith_api_key = userdata.get('Langsmith')
-os.environ["LANGSMITH_API_KEY"] = langsmith_api_key
+
+os.environ["LANGSMITH_API_KEY"] = st.secrets["LANGSMITH_API_KEY"]
 os.environ["LANGSMITH_PROJECT"] = "pr-new-pay-71"
 
 # Set Tavily (Web Search Tool) variables
-tavily_api_key = userdata.get('Tavily')
-os.environ["TAVILY_API_KEY"] = tavily_api_key
+os.environ["TAVILY_API_KEY"] = st.secrets["TAVILY_API_KEY"]
 
 # Set OpenAI variables
-api_key = userdata.get('OpenAI')
-os.environ["OPENAI_API_KEY"] = api_key
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 model = ChatOpenAI(model="gpt-4o-mini")
 
 #Set Tavily as a tool
@@ -68,8 +48,7 @@ search = TavilySearch(max_results=2,
 tools = [search]
 
 # Setup Pinecone
-pinecone_api_key = userdata.get('Pinecone')
-os.environ["PINECONE_API_KEY"] = pinecone_api_key
+os.environ["PINECONE_API_KEY"] = st.secrets["PINECONE_API_KEY"]
 pinecone_api_key = os.environ.get("PINECONE_API_KEY")
 pc = Pinecone(api_key=pinecone_api_key)
 
@@ -77,27 +56,27 @@ pc = Pinecone(api_key=pinecone_api_key)
 from pinecone import ServerlessSpec
 index_name = "langchain"
 index = pc.Index(index_name)
-index.delete_namespace(namespace="__default__")
+# index.delete_namespace(namespace="__default__")
 
 #Setup embedding
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 
 
-from google.colab import drive
+# from google.colab import drive
 
-if not os.path.exists("/content/drive/MyDrive"):
-    drive.mount("/content/drive")
-    print("Google Drive wurde gemountet.")
-else:
-    print("Google Drive ist bereits gemountet.")
+# if not os.path.exists("/content/drive/MyDrive"):
+#     drive.mount("/content/drive")
+#     print("Google Drive wurde gemountet.")
+# else:
+#     print("Google Drive ist bereits gemountet.")
 
-auth.authenticate_user()
+# auth.authenticate_user()
 
-from langchain_community.document_loaders import PyPDFLoader
+# from langchain_community.document_loaders import PyPDFLoader
 
-file_path = "/content/drive/MyDrive/AIAgent/leistungsuebersicht-kfz.pdf"
-loader = PyPDFLoader(file_path)
-docs = loader.load()
+# file_path = "/content/drive/MyDrive/AIAgent/leistungsuebersicht-kfz.pdf"
+# loader = PyPDFLoader(file_path)
+# docs = loader.load()
 
 #import pprint
 #pprint.pp(docs[0].page_content)
@@ -113,8 +92,8 @@ docs = loader.load()
 #loader = WebBaseLoader("https://en.wikipedia.org/wiki/Large_language_model")
 #document = loader.load()
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-documents = text_splitter.split_documents(docs)
+# text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+# documents = text_splitter.split_documents(docs)
 
 #Setup vector_store
 vector_store = PineconeVectorStore(index=index, embedding=embeddings)
@@ -122,7 +101,7 @@ vector_store = PineconeVectorStore(index=index, embedding=embeddings)
 
 
 # Add documents to Pinecone index
-vector_store.add_documents(documents)
+# vector_store.add_documents(documents)
 
 
 # Create a prompt template for the retrieval chain
@@ -175,7 +154,13 @@ agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 # })
 # print(result)
 
-result = agent_executor.invoke({
-    "input": "Wann ist Hulk Hogan gestorben"
-})
-print(result)
+#result = agent_executor.invoke({
+#    "input": "Wann ist Hulk Hogan gestorben"
+#})
+#print(result)
+
+def get_rag_response(query: str) -> str:
+    result = agent_executor.invoke({
+        "input": query
+    })
+    return str(result)
