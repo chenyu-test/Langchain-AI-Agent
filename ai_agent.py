@@ -163,4 +163,4 @@ def get_rag_response(query: str) -> str:
     result = agent_executor.invoke({
         "input": query
     })
-    return str(result)
+    return str(result["output"])
